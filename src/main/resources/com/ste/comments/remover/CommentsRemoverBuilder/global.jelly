@@ -1,0 +1,13 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <f:section title="Comments Remover">
+    <f:entry title="Python path" field="pythonPath"
+      description="Set this field if you don't want to use the default Python executable (available as 'python' on system path)">
+      <f:textbox />
+    </f:entry>
+    <f:entry title="Pip path" field="pipPath"
+      description="Set this field if you don't want to use the default pip executable (available as 'pip' on system path)">
+      <f:textbox />
+    </f:entry>
+  </f:section>
+</j:jelly>

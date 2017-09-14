@@ -1,0 +1,38 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <!--
+    This jelly script is used for per-project configuration.
+
+    See global.jelly for a general discussion about jelly script.
+  -->
+
+  <!--
+    Creates a text field that shows the value of the "name" property.
+    When submitted, it will be passed to the corresponding constructor parameter.
+  -->
+  <f:entry title="Filename" field="filename">
+    <f:textbox />
+  </f:entry>
+  <f:entry name="language" title="Language" field="language">
+    <select name="language">
+      <option value="ActionScript" selected="${instance.language == 'ActionScript' ? 'selected' : null}">ActionScript</option>
+      <option value="AppleScript" selected="${instance.language == 'AppleScript' ? 'selected' : null}">AppleScript</option>
+      <option value="Assembly" selected="${instance.language == 'Assembly' ? 'selected' : null}">Assembly</option>
+      <option value="Bash" selected="${instance.language == 'Bash' ? 'selected' : null}">Bash</option>
+      <option value="C" selected="${instance.language == 'C' ? 'selected' : null}">C</option>
+      <option value="CSharp" selected="${instance.language == 'CSharp' ? 'selected' : null}">CSharp</option>
+      <option value="CSS" selected="${instance.language == 'CSS' ? 'selected' : null}">CSS</option>
+      <option value="HTML" selected="${instance.language == 'HTML' ? 'selected' : null}">HTML</option>
+      <option value="JavaScript" selected="${instance.language == 'JavaScript' ? 'selected' : null}">JavaScript</option>
+      <option value="PHP" selected="${instance.language == 'PHP' ? 'selected' : null}">PHP</option>
+      <option value="Python" selected="${instance.language == 'Python' ? 'selected' : null}">Python</option>
+      <option value="Ruby" selected="${instance.language == 'Ruby' ? 'selected' : null}">Ruby</option>
+      <option value="SQL" selected="${instance.language == 'SQL' ? 'selected' : null}">SQL</option>
+      <option value="VB" selected="${instance.language == 'VB' ? 'selected' : null}">VB</option>
+      <option value="XML" selected="${instance.language == 'XML' ? 'selected' : null}">XML</option>
+    </select>
+  </f:entry>
+  <f:entry title="Output directory" field="outputDir">
+    <f:textbox default="comment_remover_output"/>
+  </f:entry>
+</j:jelly>
