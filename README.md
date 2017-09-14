@@ -6,9 +6,9 @@ version of them.
 
 User can specify Python path in global settings for the plugin (otherwise the one on the system PATH is used).
 
-### Before build
-Put ZIP archive of Comments Remover (in Python) in `src/main/resources`.
-The plugin expects to find `comment_remover.py`  and `requirement.txt` in the archive.
+### Updating plugin with a new version of Comments Remover
+Create ZIP archive of all files required to run Comments Remover - in particular, `comments_remover.py` and `requirements.txt`. Put it in `src/main/resources`.
+The plugin expects to find `comment_remover.py`  and `requirement.txt` on the top lever of the archive.
 
 ### Debug
 `mvnDebug hpi:run`
