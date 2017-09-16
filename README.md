@@ -1,6 +1,6 @@
 # Comments Remover Jenkins plugin
 
-This plugin removes comments from source files for a number of programming languages. Required Python 3 on Jenkins server.
+This plugin removes comments from source files for a number of programming languages. Required Python 3.6 on Jenkins server.
 A new build step is added: 'Invoke Comments Remover' which accepts files to process as input and creates uncommented
 version of them. 
 
@@ -30,11 +30,11 @@ Go to Manage Jenkins -> Configure System to access them
 
 ![settings](https://user-images.githubusercontent.com/9072987/30342530-814deb06-97fa-11e7-996f-a5020d6870aa.png "Settings")
 
-![settings](https://user-images.githubusercontent.com/9072987/30342531-816886e6-97fa-11e7-890d-d3a2837ee6f3.png "Settings")
+![settings](https://user-images.githubusercontent.com/9072987/30513656-199cf8fc-9b07-11e7-99e7-5a8cf530e763.png "Settings")
 
 There is help section to provide examples:
 
-![settings](https://user-images.githubusercontent.com/9072987/30342532-8174449a-97fa-11e7-85a9-ec6d1f5239bd.png "Settings")
+![settings](https://user-images.githubusercontent.com/9072987/30513578-1f1a5d5c-9b06-11e7-89c3-4297cec3147d.png "Settings")
 
 
 # Usage
@@ -71,3 +71,4 @@ Comments Remover script is unpacked to JENKINS_HOME directory (which is availabl
 
 ![shell step output](https://user-images.githubusercontent.com/9072987/30379735-c522fc02-9897-11e7-9286-c3363f1c4a2b.jpg "Execute shell build step output")
 
+If you use Jenkins Struct Plugin, this plugin has a shorthand defined: `commentsremover`.

@@ -3,6 +3,7 @@ package com.ste.comments.remover;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.Proc;
 import hudson.model.AbstractProject;
 import hudson.model.Run;
 import hudson.model.TaskListener;
@@ -14,6 +15,7 @@ import jenkins.tasks.SimpleBuildStep;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -23,7 +25,9 @@ import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import java.io.*;
 import java.net.URL;
+import java.util.concurrent.TimeUnit;
 
+@Symbol("commentsremover")
 public class CommentsRemoverBuilder extends Builder implements SimpleBuildStep {
 
     private final static String COMMENTS_REMOVER_ARCHIVE_NAME = "comments_remover.zip";
@@ -45,7 +49,7 @@ public class CommentsRemoverBuilder extends Builder implements SimpleBuildStep {
                         @Nonnull TaskListener listener) throws IOException, InterruptedException {
         listener.getLogger().println("Invoking Comments Remover for filename: " + filename + " and language: " + language);
         File outputDirPath = setupOutputDir(workspace, outputDir);
-        runCommentsRemoverProcess(listener, workspace, getDescriptor().getCommentRemoverDir(), outputDirPath);
+        runCommentsRemoverProcess(workspace, launcher, listener, getDescriptor().getCommentsRemoverDir(), outputDirPath);
         listener.getLogger().println("Comments Remover finished processing. Output saved to directory: " + outputDirPath.getAbsoluteFile());
     }
 
@@ -58,8 +62,8 @@ public class CommentsRemoverBuilder extends Builder implements SimpleBuildStep {
         return outputDirPath;
     }
 
-    private void runCommentsRemoverProcess(TaskListener listener, FilePath workspace, File
-            removerScriptDir, File outputDirPath) throws IOException {
+    private void runCommentsRemoverProcess(FilePath workspace, Launcher launcher, TaskListener listener, File
+            removerScriptDir, File outputDirPath) throws IOException, InterruptedException {
 
         String pythonPath = getDescriptor().getPythonPath();
         String pipPath = getDescriptor().getPipPath();
@@ -67,27 +71,25 @@ public class CommentsRemoverBuilder extends Builder implements SimpleBuildStep {
         String pipExecutable = StringUtils.isEmpty(pythonPath) ? "pip" : pipPath;
         String[] pipCommand = new String[]{pipExecutable, "install", "-r", removerScriptDir + File.separator + "requirements.txt", "-q"};
         listener.getLogger().println("Installing pip requirements [" + StringUtils.join(pipCommand, " ") + "]...");
-        runProcess(new ProcessBuilder(pipExecutable, "install", "-r", removerScriptDir + File.separator + "requirements.txt", "-q"),
-                listener);
+        runProcess(launcher.launch().cmds(pipCommand).readStdout().start(), listener);
 
         String pythonExecutable = StringUtils.isEmpty(pythonPath) ? "python" : pythonPath;
         String[] commentsRemoverCommand = new String[]{pythonExecutable, removerScriptDir + File.separator + COMMENTS_REMOVER_ENTRY_FILE,
                 workspace.getRemote() + File.separator + filename, language, outputDirPath.getAbsolutePath()};
         listener.getLogger().println("Executing script [" + StringUtils.join(commentsRemoverCommand, " ") + "]...");
-        runProcess(new ProcessBuilder(commentsRemoverCommand), listener);
+        runProcess(launcher.launch().cmds(commentsRemoverCommand).readStdout().start(), listener);
     }
 
-    private void runProcess(ProcessBuilder pb, TaskListener listener) throws IOException {
-        pb.redirectErrorStream(true);
-
-        Process proc = pb.start();
-
-        /* Read the process's output */
-        String line;
-        BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-        while ((line = in.readLine()) != null) {
-            listener.getLogger().println(line);
+    private void runProcess(Proc process, TaskListener listener) throws IOException, InterruptedException {
+        if (getDescriptor().getVerboseMode()) {
+            /* Read the process's output */
+            String inputLine;
+            BufferedReader in = new BufferedReader(new InputStreamReader(process.getStdout()));
+            while ((inputLine = in.readLine()) != null ) {
+                listener.getLogger().println(inputLine);
+            }
         }
+        process.joinWithTimeout(60, TimeUnit.SECONDS, listener);
     }
 
     @Override
@@ -99,7 +101,8 @@ public class CommentsRemoverBuilder extends Builder implements SimpleBuildStep {
     public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
         private String pythonPath;
         private String pipPath;
-        private File commentRemoverDir;
+        private boolean verboseMode = true;
+        private File commentsRemoverDir;
 
         public DescriptorImpl() throws IOException {
             load();
@@ -123,7 +126,7 @@ public class CommentsRemoverBuilder extends Builder implements SimpleBuildStep {
             System.out.println("Unpacking Comments Remover from: " + removerZipUrl.getFile() + " to " + removerTargetDir);
             ZipUtil.unpack(removerZip, removerTargetDir);
             removerZip.delete();
-            commentRemoverDir = removerTargetDir;
+            commentsRemoverDir = removerTargetDir;
         }
 
         private File copyZipFromResources(URL removerUrl, File targetDir) throws IOException {
@@ -179,20 +182,25 @@ public class CommentsRemoverBuilder extends Builder implements SimpleBuildStep {
         public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
             pythonPath = formData.getString("pythonPath");
             pipPath = formData.getString("pipPath");
+            verboseMode = formData.getBoolean("verboseMode");
             save();
             return super.configure(req, formData);
         }
 
-        String getPythonPath() {
+        public String getPythonPath() {
             return pythonPath;
         }
 
-        String getPipPath() {
+        public String getPipPath() {
             return pipPath;
         }
 
-        File getCommentRemoverDir() {
-            return commentRemoverDir;
+        public boolean getVerboseMode() {
+            return verboseMode;
+        }
+
+        public File getCommentsRemoverDir() {
+            return commentsRemoverDir;
         }
     }
 
