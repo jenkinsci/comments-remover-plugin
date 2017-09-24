@@ -25,6 +25,7 @@ import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import java.io.*;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
 @Symbol("commentsremover")
@@ -58,7 +59,10 @@ public class CommentsRemoverBuilder extends Builder implements SimpleBuildStep {
         if (outputDirPath.exists()) {
             FileUtils.deleteDirectory(outputDirPath);
         }
-        outputDirPath.mkdir();
+        boolean created = outputDirPath.mkdir();
+        if (!created) {
+            throw new RuntimeException("Error, failed to create output directory");
+        }
         return outputDirPath;
     }
 
@@ -84,10 +88,11 @@ public class CommentsRemoverBuilder extends Builder implements SimpleBuildStep {
         if (getDescriptor().getVerboseMode()) {
             /* Read the process's output */
             String inputLine;
-            BufferedReader in = new BufferedReader(new InputStreamReader(process.getStdout()));
-            while ((inputLine = in.readLine()) != null ) {
+            BufferedReader in = new BufferedReader(new InputStreamReader(process.getStdout(), StandardCharsets.UTF_8));
+            while ((inputLine = in.readLine()) != null) {
                 listener.getLogger().println(inputLine);
             }
+            in.close();
         }
         process.joinWithTimeout(60, TimeUnit.SECONDS, listener);
     }
@@ -114,7 +119,9 @@ public class CommentsRemoverBuilder extends Builder implements SimpleBuildStep {
             File removerTargetDir = new File(jenkinsRootDir.getAbsolutePath() + File.separator + "comments_remover");
             if (removerTargetDir.exists()) {
                 System.out.println("Removing old Comments Remover from: " + removerTargetDir);
-                removerTargetDir.delete();
+                if (!removerTargetDir.delete()) {
+                    System.out.println("Failed to delete old Comments Remover!");
+                }
             }
 
             URL removerZipUrl = CommentsRemoverBuilder.class.getClassLoader().getResource(COMMENTS_REMOVER_ARCHIVE_NAME);
@@ -125,7 +132,9 @@ public class CommentsRemoverBuilder extends Builder implements SimpleBuildStep {
             File removerZip = copyZipFromResources(removerZipUrl, jenkinsRootDir);
             System.out.println("Unpacking Comments Remover from: " + removerZipUrl.getFile() + " to " + removerTargetDir);
             ZipUtil.unpack(removerZip, removerTargetDir);
-            removerZip.delete();
+            if (!removerZip.delete()) {
+                System.out.println("Failed to delete archive!");
+            }
             commentsRemoverDir = removerTargetDir;
         }
 
