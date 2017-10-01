@@ -6,7 +6,7 @@ version of them.
 
 User can specify Python path in global settings for the plugin (otherwise the one on the system PATH is used).
 
-### Contributor / Creator 
+### Contributors  
 
 Daniel Dyląg
 
