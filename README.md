@@ -10,7 +10,6 @@ User can specify Python path in global settings for the plugin (otherwise the on
 
 Daniel Dyląg
 
-Konstantin Paraschevin
 
 ## For users
 
