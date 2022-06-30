@@ -73,7 +73,7 @@
         <dependency>
             <groupId>org.zeroturnaround</groupId>
             <artifactId>zt-zip</artifactId>
-            <version>1.12</version>
+            <version>1.13</version>
             <type>jar</type>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.jenkins-ci.plugins/structs -->
